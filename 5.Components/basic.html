@@ -6,26 +6,57 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <script src="//unpkg.com/vue@2.5.17"></script>
+    <style>
+      .header h1 {
+          width: 100%;
+          height: 30px;
+          background-color: #f1f1f1;
+          border: 1px solid #d3d3d3;
+          padding: 30px 15px;
+      }
+
+      .content li {
+          width: 100%;
+          height: 30px;
+          padding: 30px 15px;
+          background-color: white;
+          border: 1px solid #d3d3d3;
+          text-align: left;
+      }
+    </style>
 </head>
 <body>
     <div id="fruits-list">
-        <page-header>
-            <h1 slot="header">여름 과일</h1>
+        <page-header class="header">
+            <h1 slot="header">겨울 과일</h1>
         </page-header>
-        <ul>
-            <li>수박</li>
-            <li>망고</li>
-        </ul>
+        <page-content class="content">
+            <ul slot="content">
+                <li>사과</li>
+                <li>딸기</li>
+            </ul>
+        </page-content>
     </div>
     <script>
         var headerTemplate = `
             <div style="color: gray;">
-                <slot name="header">부모 컴포넌트로부터 전달받은 내용이 없음</slot>
+                <slot name="header">No title</slot>
+            </div>
+        `;
+
+        var contentTemplate = `
+            <div>
+                <slot name="content">No contents</slot>
+            </div>
         `;
 
         Vue.component('page-header', {
             template: headerTemplate
         });
+
+        Vue.component('page-content', {
+            template: contentTemplate
+        })
 
         new Vue({
             el: '#fruits-list'
