@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="//unpkg.com/vue@2.5.17"></script>
+</head>
+<body>
+    <div id="fruits-list">
+        <page-header>
+            <h1 slot="header">여름 과일</h1>
+        </page-header>
+        <ul>
+            <li>수박</li>
+            <li>망고</li>
+        </ul>
+    </div>
+    <script>
+        var headerTemplate = `
+            <div style="color: gray;">
+                <slot name="header">부모 컴포넌트로부터 전달받은 내용이 없음</slot>
+        `;
+
+        Vue.component('page-header', {
+            template: headerTemplate
+        });
+
+        new Vue({
+            el: '#fruits-list'
+        });
+    </script>
+</body>
+</html>
