@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@2.4.2/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/vue-router@2.7.0/dist/vue-router.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <nav>
+            <router-link to="/">Main</router-link>
+            <router-link to="/top">Top Page</router-link>
+            <router-link to="/users">User List Page</router-link>
+            <router-link to="/users/new?redirect=true">신규 사용자 등록</router-link>
+            <router-link to="/login" v-show="!Auth.loggedIn()">로그인</router-link>
+            <router-link to="/logout" v-show="Auth.loggedIn()">로그아웃</router-link>
+        </nav>
+        <router-view></router-view>
+    </div>
+
+    <script type="text/x-template" id="user-list">
+        <div>
+            <div class="loading" v-if="loading">로딩 중...</div>
+            <div v-if="error" class="error">
+                {{ error }}
+            </div>
+            <div v-for="user in users" :key="user.id">
+                <h2>{{ user.name }}</h2>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/x-template" id="user-detail">
+        <div>
+            <div class="loading" v-if="loading">로딩 중...</div>
+            <div v-if="error" class="error">
+                {{ error }}
+            </div>
+            <div v-if="user">
+                <h2>{{ user.name }}</h2>
+                <p>{{ user.description }}</p>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/x-template" id="user-create">
+        <div>
+            <div class="sending" v-if="sending">Sending...</div>
+            <div>
+                <h2>신규 사용자 등록</h2>
+                <div>
+                    <label>이름: </label>
+                    <input type="text" v-model="user.name" />
+                </div>
+                <div>
+                    <label>설명: </label>
+                    <textarea v-model="user.description"></textarea>
+                </div>
+                <div v-if="error" class="error">
+                    {{ error }}
+                </div>
+                <div>
+                    <input type="button" @click="createUser" value="등록" />
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/x-template" id="login">
+        <div>
+            <h2>Login</h2>
+            <p v-if="$route.query.redirect">
+                로그인이 필요합니다.
+            </p>
+            <form @submit.prevent="login">
+                <label>
+                    <input v-model="email" placeholder="email">
+                </label>
+                <label>
+                    <input v-model="pass" placeholder="password" type="password">
+                </label>
+                <br>
+                <button type="submit">로그인</button>
+                <p v-if="error" class="error">
+                    로그인에 실패했습니다.
+                </p>
+            </form>
+        </div>
+    </script>
+
+    <script>
+        var Auth = {
+            login: function(email, pass, callback) {
+                setTimeout(function() {;
+                    if (email === 'vue@example.com' && pass === 'vue') {
+                        localStorage.token = Math.random().toString(36).substring(7);
+                        if (callback) {
+                            callback(true);
+                        }
+                    } else {
+                        if (callback) {
+                            callback(false);
+                        }
+                    }
+                }, 100);
+            },
+            logout: function() {
+                delete localStorage.token;
+            },
+            loggedIn: function() {
+                return !!localStorage.token;
+            }
+        }
+
+        var userData = [{
+                    id: 1,
+                    name: 'Aristo Tellus',
+                    description: '그리스의 철학자가 되고 싶습니다.'
+                },{
+                    id: 2,
+                    name: 'Yoda',
+                    description: '제다이 마스터 요다'
+                }];
+
+        var postUser = function(params, callback) {
+            setTimeout(function() {
+                params.id = userData.length + 1;
+                userData.push(params);
+                callback(null, params);
+            }, 1000);
+        };
+
+        var getUser = function(callback) {
+            setTimeout(function() {
+                var filterdUsers = userData.filter(function(user) {
+                    return user.id === parseInd(userId, 10);
+                });
+                callback(null, filterdUsers && filterdUsers[0]);
+            }, 1000);
+        }
+
+        var getUsers = function(callback) {
+            setTimeout(function() {
+                callback(null, userData);
+            }, 1000);
+        }
+
+        var UserCreate = {
+            template: '#user-create',
+            data: function() {
+                return {
+                    sending: false,
+                    user: this.defaultUser(),
+                    error: null
+                }
+            },
+            created: function() {
+
+            },
+            methods: {
+                defaultUser: function() {
+                    return {
+                        name: '',
+                        description: ''
+                    }
+                },
+                createUser: function() {
+                    if (this.user.name.trim() === '') {
+                        this.error = 'Name은 필수입니다.';
+                        return;
+                    }
+                    if (this.user.description.trim() === '') {
+                        this.error = 'Description은 필수입니다.';
+                        return;
+                    }
+
+                    postUser(this.user, (function(err, user) {
+                        this.sending = false;
+                        if (err) {
+                            this.error = err.toString();
+                        } else {
+                            this.error = null;
+                            this.user = this.defaultUser();
+                            this.$router.push('/users');
+                        }
+                    }.bind(this)));
+                }
+            }
+        }
+
+        var Login = {
+            template: '#login',
+            data: function() {
+                return {
+                    email: 'vue@example.com',
+                    pass: '',
+                    error: false
+                }
+            },
+            methods: {
+                login: function() {
+                    Auth.login(this.email, this.pass, (function(loggedIn) {
+                        if(!loggedIn) {
+                            this.error = true;
+                        } else {
+                            this.$router.replace(this.$route.query.redirect || '/')
+                        }
+                    }.bind(this)));
+                }
+            }
+        }
+
+        var UserDetail = {
+            template: '#user-detail',
+            data: function() {
+                return {
+                    loading: false,
+                    user: null,
+                    error: null
+                }
+            },
+            created: function() {
+                this.fetchData();
+            },
+            watch: {
+                $route: 'fetchData'
+            },
+            methods: {
+                fetchData: function() {
+                    this.loading = true;
+                    getUser(this.$route.params.userId, (function(err, user) {
+                        this.loading = false;
+                        if(err) {
+                            this.error = err.toString();
+                        } else {
+                            this.user = user;
+                        }
+                    }.bind(this)));
+                }
+            }
+        };
+
+        var UserList = {
+            template: '#user-list',
+            data: function() {
+                return {
+                    loading: false,
+                    users: function() {
+                        return [];
+                    },
+                    error: null
+                }
+            },
+            created: function() {
+                this.fetchData();
+            },
+            watch: {
+                $route: 'fetchData'
+            },
+            methods: {
+                fetchData: function() {
+                    this.loading = true;
+                    getUsers(function(error, users) {
+                        this.loading = false;
+                        if (error) {
+                            this.error = error.toString();
+                        } else {
+                            this.users = users;
+                        }
+                    }.bind(this));
+                }
+            }
+        };
+        var router = new VueRouter({
+            routes: [
+                {
+                    path: '/top',
+                    component: {
+                        template: '<div>최상위 페이지입니다.</div>'
+                    }
+                },
+                {
+                    path: '/users',
+                    component: UserList
+                },
+                {
+                    path: '/users/new',
+                    component: UserCreate,
+                    beforeEnter: function(to, from, next) {
+                        if(!Auth.loggedIn()) {
+                            next({
+                                path: '/login',
+                                query: {
+                                    redirect: to.fullPath
+                                }
+                            })
+                        } else {
+                            next();
+                        }
+                    }
+                },
+                {
+                    path: '/users/:userId',
+                    component: UserDetail
+                },
+                {
+                    path: '/login',
+                    component: Login
+                },
+                {
+                    path: '/logout',
+                    beforeEnter: function(to, from, next) {
+                        Auth.logout();
+                        next('/');
+                    }
+                }
+            ]
+        });
+        var app = new Vue({
+            router
+        }).$mount('#app');  
+    </script>
+</body>
+</html>
