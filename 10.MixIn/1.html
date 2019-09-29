@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@2.5.17"></script>
+</head>
+<body>
+    <div id="app">
+        <icon-share-button></icon-share-button>
+        <text-share-button></text-share-button>
+    </div>
+    <script>
+        const IconShareButton = {
+            template: `
+                <button @click="share"><i class="fas fa-share-square"></i></button>
+            `,
+            data: function() {
+                return {
+                    _isProcessing: false
+                }
+            },
+            methods: {
+                share: function() {
+                    if (this._isProcessing) {
+                        return;
+                    }
+
+                    if (!window.confirm('공유하시겠습니까?')) {
+                        return;
+                    }
+
+                    this._isProcessing = true;
+
+                    setTimeout(() => {
+                        window.alert('공유되었습니다.');
+                        this._isProcessing = false;
+                    }, 300);
+                }
+            }
+        }
+
+        const TextShareButton = {
+            template: `
+                <buttton @click="share">{{ buttonLabel }}</button>
+            `,
+            data: function() {
+                return {
+                    buttonLabel: '공유하기',
+                    _isProcessing: false
+                }
+            },
+            methods: {
+                share: function() {
+                    if (this._isProcessing) {
+                        return;
+                    }
+
+                    if (!window.confirm('공유하시겠습니까?')) {
+                        return;
+                    }
+
+                    this._isProcessing = true;
+
+                    setTimeout(() => {
+                        window.alert('공유되었습니다.');
+                        this._isProcessing = false;
+                    }, 300);
+                }
+            }
+        }
+
+        new Vue({
+            el: '#app',
+            components: {
+                IconShareButton,
+                TextShareButton
+            }
+        })
+    </script>
+</body>
+</html>
